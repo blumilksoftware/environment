@@ -1,0 +1,28 @@
+global:
+    checkNewVersion: true
+
+log:
+    level: ERROR
+
+entryPoints:
+    web:
+        address: ":80"
+
+    websecure:
+        address: ":443"
+        http3: {}
+
+api:
+    insecure: false
+    dashboard: true
+
+providers:
+    file:
+        directory: "/etc/traefik/config/dynamic"
+        watch: true
+    docker:
+        network: "traefik-proxy-blumilk-local"
+        exposedByDefault: false
+
+experimental:
+    http3: true
