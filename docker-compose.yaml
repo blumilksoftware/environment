@@ -10,6 +10,7 @@ services:
     container_name: traefik-whoami-container
     labels:
       - "traefik.enable=true"
+      - "traefik.blumilk.environment=true"
       # HTTP
       - "traefik.http.routers.whoami-http-router.rule=Host(`whoami.blumilk.localhost`)"
       - "traefik.http.routers.whoami-http-router.entrypoints=web"

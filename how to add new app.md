@@ -27,6 +27,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
+            - "traefik.blumilk.environment=true"
             # HTTP
             - "traefik.http.routers.NAME-http-router.rule=Host(`DOMAIN.blumilk.localhost`)"
             - "traefik.http.routers.NAME-http-router.entrypoints=web"
@@ -41,12 +42,12 @@ For `NAME` set any name (without spaces) related to your app\
 For `DOMAIN` set DNS name, where your app will be available over internet, e.g. `my-app` then app will be accessible under: `my-app.blumilk.localhost`.
 
 You can use .env file to load domain name, e.g.:
-```
+```yaml
 # docker-compose.yaml
 
 - "traefik.http.routers.<<ROUTER NAME>>.rule=Host(`${YOUR_APP_HOST_NAME}`)"
 ```
-```
+```dotenv
 # .env file
 
 YOUR_APP_HOST_NAME=my-app.blumilk.localhost
@@ -80,6 +81,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
+            - "traefik.blumilk.environment=true"
             # HTTP
             - "traefik.http.routers.NAME-http-router.rule=Host(`DOMAIN.blumilk.localhost`)"
             - "traefik.http.routers.NAME-http-router.entrypoints=web"            
@@ -91,6 +93,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
+            - "traefik.blumilk.environment=true"
             # HTTPS
             - "traefik.http.routers.NAME-https-router.rule=Host(`DOMAIN.blumilk.localhost`)"
             - "traefik.http.routers.NAME-https-router.entrypoints=websecure"
@@ -103,6 +106,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
+            - "traefik.blumilk.environment=true"
             # HTTP
             - "traefik.http.routers.NAME-http-router.rule=Host(`DOMAIN.blumilk.localhost`)"
             - "traefik.http.routers.NAME-http-router.entrypoints=web"         
@@ -118,6 +122,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
+            - "traefik.blumilk.environment=true"
             # HTTP
             - "traefik.http.routers.NAME-http-router.rule=Host(`DOMAIN.blumilk.localhost`)"
             - "traefik.http.routers.NAME-http-router.entrypoints=web"

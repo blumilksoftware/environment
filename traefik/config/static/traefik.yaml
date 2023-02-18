@@ -23,6 +23,7 @@ providers:
     docker:
         network: "traefik-proxy-blumilk-local"
         exposedByDefault: false
+        constraints: "Label(`traefik.blumilk.environment`,`true`)"
 
 experimental:
     http3: true

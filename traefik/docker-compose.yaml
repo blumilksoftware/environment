@@ -11,6 +11,7 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
+      - "traefik.blumilk.environment=true"
       # HTTP
       - "traefik.http.routers.traefik-dashboard-http-router.rule=Host(`${TRAEFIK_DASHBOARD_HOST_NAME}`)"
       - "traefik.http.routers.traefik-dashboard-http-router.service=api@internal"
