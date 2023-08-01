@@ -1,5 +1,5 @@
 TLD := blumilk.localhost
-MKCERT_BINARY=./bin/mkcert-v1.4.4-linux-amd64
+MKCERT_BINARY := ./bin/mkcert-v1.4.4-linux-amd64
 
 CERTS_DIRECTORY := ./traefik/certs
 
