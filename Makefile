@@ -6,7 +6,8 @@ CERTS_DIRECTORY := ./traefik/certs
 DOMAIN := *.${TLD}
 CERT_FILENAME := _wildcard.${TLD}.pem
 KEY_FILENAME := _wildcard.${TLD}-key.pem
-TRAEFIK_NETWORK_NAME := traefik-proxy-${TLD}
+
+TRAEFIK_NETWORK_NAME := traefik-proxy-blumilk-local
 
 export COMPOSE_DOCKER_CLI_BUILD = 1
 export DOCKER_BUILDKIT = 1
