@@ -1,6 +1,52 @@
-# Local Blumilk traefik environment
+# Local Blumilk Traefik environment
 
 This repo contains default Blumilk traefik configuration for local dev environment.
+
+# Requirements
+
+---
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose (version 2)](https://docs.docker.com/compose/install/)
+- [Taskfile](https://taskfile.dev/) (version 3.42.1)
+
+# Installation
+
+---
+## Taskfile setup
+### Linux
+
+If you don't have Task binary installed, you can install it by running:
+
+```sh
+sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin v3.42.1 
+```
+_-b sets bindir or installation directory, Defaults to ./bin_ \
+_-d turns on debug logging_
+
+Other installation methods: https://taskfile.dev/installation \
+GitHub: https://github.com/go-task/task \
+Taskfile releases: https://github.com/go-task/task/releases
+
+### Other OS
+
+If you are using other OS, please update readme with installation instructions.
+
+# Task commands
+
+---
+To list all task commands just run:
+```shell
+task
+```
+### Task commands completions:
+
+---
+Add this line to `.bashrc` if you are using bash:
+```
+eval "$(task --completion bash)"
+```
+For other shells see: \
+https://taskfile.dev/installation/#option-1-load-the-completions-in-your-shells-startup-config-recommended
 
 ## Usage
 

@@ -1,0 +1,74 @@
+# https://taskfile.dev
+version: "3.42.1"
+
+silent: true
+
+env:
+  TRAEFIK_DIR: ./traefik
+
+dotenv:
+  - .certs.env
+
+tasks:
+  default:
+    desc: "List all available tasks"
+    cmds:
+      - task --list-all
+
+  run:
+    desc: "Run containers"
+    preconditions:
+      - sh: test -f .env
+        msg: "Please create .env file."
+    cmds:
+      - cmd: docker compose up --detach
+
+  stop:
+    desc: "Stop containers"
+    cmds:
+      - cmd: docker compose stop
+
+  restart:
+    desc: "Restart containers"
+    cmds:
+      - task: stop-traefik
+      - task: run-traefik
+
+  generate-certs:
+    desc: "Generate certificates"
+    deps: [install-mkcert]
+    requires:
+      vars: [CERTS_DIRECTORY, CERT_FILENAME, KEY_FILENAME, DOMAIN]
+    cmds:
+      - cmd: "{{ .MKCERT_BINARY }} \
+        --cert-file={{ .CERTS_DIRECTORY }}/{{ .CERT_FILENAME }} \
+        --key-file={{ .CERTS_DIRECTORY }}/{{ .KEY_FILENAME }} \
+        -ecdsa \
+        {{ .DOMAIN }}"
+
+  install-mkcert:
+    desc: "Install mkcert tool from binary"
+    requires:
+      vars: [MKCERT_BINARY]
+    cmds:
+      - task: _install-certutil-library
+      - cmd: echo "Installing mkcert from {{ .MKCERT_BINARY }}"
+      - cmd: "{{ .MKCERT_BINARY }} --install"
+      - cmd: echo "Done."
+
+  mkcert-print-CA-location:
+    desc: "Print the CA certificate and key storage location."
+    requires:
+      vars: [MKCERT_BINARY]
+    cmds:
+      - cmd: "{{ .MKCERT_BINARY }} -CAROOT"
+
+  _install-certutil-library:
+    internal: true
+    platforms: [linux]
+    desc: "Install certutil"
+    requires:
+      vars: [CERTUTIL_INSTALL_COMMAND]
+    cmds:
+      - cmd: echo "Installing libnss3-tools via command {{ .CERTUTIL_INSTALL_COMMAND }}"
+      - cmd: "{{ .CERTUTIL_INSTALL_COMMAND }}"
