@@ -1,0 +1,18 @@
+$TTL    1d ;
+default expiration time (in seconds) of all RRs without their own
+TTL value@       IN      SOA
+
+ns1.localhost.blumilk.pl. root.localhost.blumilk.pl.
+(                  3      ;
+Serial  1d;
+Refresh 1h;
+Retry 1w;
+Expire 1h);
+Negative Cache TTL;
+
+name servers - NS records     IN      NS
+ns1.localhost.blumilk.pl.;
+
+name servers - A records
+ns1.localhost.blumilk.pl.      IN      A      172.24.0.2
+*.localhost.blumilk.pl.        IN      A      127.0.0.1

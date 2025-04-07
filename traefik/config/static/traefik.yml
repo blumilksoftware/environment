@@ -3,7 +3,8 @@ global:
     sendAnonymousUsage: false
 
 log:
-    level: ERROR
+    level: DEBUG
+    format: common
 
 entryPoints:
     web:
@@ -22,9 +23,6 @@ providers:
         directory: "/etc/traefik/config/dynamic"
         watch: true
     docker:
-        network: "traefik-proxy-blumilk-local"
+        network: "traefik-proxy-blumilk-local-environment"
         exposedByDefault: false
-        constraints: "Label(`traefik.blumilk.environment`,`true`)"
-
-experimental:
-    http3: true
+        constraints: "Label(`traefik.blumilk.local.environment`,`true`)"

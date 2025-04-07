@@ -1,0 +1,4 @@
+zone "localhost.blumilk.pl" IN {
+    type master;
+    file "/etc/bind/localhost.blumilk.pl.zone";
+};

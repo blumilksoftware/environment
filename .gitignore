@@ -1,1 +1,4 @@
 .idea/
+.certs.env
+.env
+portainer-admin-password-file

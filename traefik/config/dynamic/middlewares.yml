@@ -6,7 +6,3 @@ http:
                 scheme: https
                 permanent: true
                 port: 443
-
-        response-gzip-compress:
-            compress:
-                minResponseBodyBytes: 1024
