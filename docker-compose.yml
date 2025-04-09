@@ -1,6 +1,10 @@
 networks:
   traefik-proxy-blumilk-local-environment:
     name: traefik-proxy-blumilk-local-environment
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
+          gateway: 172.31.0.1
 
 volumes:
   portainer-data-blumilk-local-environment:
@@ -26,12 +30,11 @@ services:
       - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.tls=true"
     networks:
-      - traefik-proxy-blumilk-local-environment
-    ports:
-      # web entrypoint
-      - ${TRAEFIK_WEB_ENTRYPOINT_HOST_PORT}:80
-      # websecure entrypoint
-      - ${TRAEFIK_WEBSECURE_ENTRYPOINT_HOST_PORT}:443
+      traefik-proxy-blumilk-local-environment:
+        ipv4_address: 172.31.100.100
+    expose:
+      - 80 # web entrypoint
+      - 443 # websecure entrypoint
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # static config file
@@ -42,7 +45,7 @@ services:
       - ./traefik/certs:/certs
 
   portainer-blumilk-local-service:
-    image: portainer/portainer-ce:lts@sha256:7f10a26bfdda3fc58295ea09b860117ecd86a642d66fb94ce1f27a4c221d4649
+    image: portainer/portainer-ce:lts
     container_name: portainer-blumilk-local-environment-container
     restart: unless-stopped
     command:
@@ -71,20 +74,41 @@ services:
       - portainer-data-blumilk-local-environment:/data
       - ./portainer/portainer-admin-password-file:/tmp/portainer-admin-password-file
 
-  bind9:
-    container_name: bind-dns
-    image: ubuntu/bind9:latest
+#  bind9-blumilk-local-service:
+#    image: ubuntu/bind9:9.18-24.04_beta
+#    container_name: bind9-blumilk-local-environment-container
+#    restart: unless-stopped
+#    user: "1000"
 #    environment:
-#      - BIND9_USER=root
-#      - TZ=Europe/Warsaw
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "953:953/tcp"
-    volumes:
-      - ./bind9/config/named.conf.local:/etc/bind/named.conf.local
-      - ./bind9/config/named.conf.options:/etc/bind/named.conf.options
-      - ./bind9/config/localhost.blumilk.pl.zone:/etc/bind/zones/localhost.blumilk.pl.zone
+#      - BIND9_USER=1000
+#      - TZ=UTC
+#    networks:
+#      traefik-proxy-blumilk-local-environment:
+#        ipv4_address: 172.31.200.200
+#    expose:
+#      - 53/tcp
+#      - 53/udp
+#    volumes:
+#      - ./bind9/config/named.conf:/etc/bind/named.conf
+#      - ./bind9/config/localhost.blumilk.pl.zone:/etc/bind/localhost.blumilk.pl.zone
 #      - ./bind9/cache:/var/cache/bind
 #      - ./bind9/records:/var/lib/bind
+
+  dnsmasq-blumilk-local-service:
+    image: dockurr/dnsmasq:2.91
+    container_name: dnsmasq-blumilk-local-environment-container
+    environment:
+      DNS1: "8.8.8.8" # google primary
+      DNS2: "8.8.4.4" # google secondary
+    networks:
+      traefik-proxy-blumilk-local-environment:
+        ipv4_address: 172.31.200.200
+    expose:
+      - 53/tcp
+      - 53/udp
+#    cap_add:
+#      - NET_ADMIN
     restart: unless-stopped
+    volumes:
+      - ./dnsmasq/dnsmasq.d/:/etc/dnsmasq.d/
+#      - ./dnsmasq.conf:/etc/dnsmasq.conf
