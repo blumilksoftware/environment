@@ -158,3 +158,13 @@ Now you will be able to send requests via https to `*.blumilk.local.env` domains
 
 Detailed instructions on how to use this environment with your project are available
 [here](project_usage.md).
+
+# Migration from previous version
+
+1. Remove old docker stuff:
+   - traefik container (`traefik-proxy-blumilk-local-container`)
+   - traefik network (`traefik-proxy-blumilk-local`)
+2. In projects, you need to update:
+   - custom Traefik label from `traefik.blumilk.environment` to `traefik.blumilk.local.environment`
+   - Traefik network from `traefik-proxy-blumilk-local` to `traefik-proxy-blumilk-local-environment`
+   - domains from `blumilk.localhost` to `blumilk.local.env`
