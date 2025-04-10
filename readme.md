@@ -1,10 +1,11 @@
 # Local Blumilk Traefik environment
 
-This repo contains default Blumilk traefik configuration for local dev environment.
+This repo contains default Blumilk traefik configuration for local development environment.
 
 # Requirements
 
 ---
+- Linux system
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose (version 2)](https://docs.docker.com/compose/install/)
 - [Taskfile](https://taskfile.dev/) (version 3.42.1)
@@ -17,7 +18,7 @@ This repo contains default Blumilk traefik configuration for local dev environme
 
 If you don't have Task binary installed, you can install it by running:
 
-```sh
+```shell
 sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin v3.42.1 
 ```
 _-b sets bindir or installation directory, Defaults to ./bin_ \
@@ -29,7 +30,7 @@ Taskfile releases: https://github.com/go-task/task/releases
 
 ### Other OS
 
-If you are using other OS, please update readme with installation instructions.
+If you are using other OS, please contribute and create pull request.
 
 # Task commands
 
@@ -48,83 +49,110 @@ eval "$(task --completion bash)"
 For other shells see: \
 https://taskfile.dev/installation/#option-1-load-the-completions-in-your-shells-startup-config-recommended
 
+# Project initialization
+
+Before first use, project has to be initialized.
+
+First, prepare `.env` file
+```shell
+cp .env.example .env
+```
+
+By default `.env` file is ready to go, and prepared for Blumilk local environment purposes. So no changes are needed. \
+But if you need to customize it, just edit `.env` file. \
+Project is flexible and all important settings are customizable via `.env` file.
+
+### Docker network
+
+By default, project uses `172.31.0.0/16` network subnet and requires 172.31.100.100 (Traefik) and 172.31.200.200 (Dnsmasq) IPs. \
+So if you have allocated this network and IPs, you need to remove it before initialization or change network settings in `.env` file.
+
+### Certificates and domain
+
+By default `blumilk.local.env` domain will be used. \
+mkcert generate wildcard certificate for `*.blumilk.local.env` domains.
+
+## Project init
+
+This command will prepare all necessary files and configs based on `.env` file.
+```shell
+task init
+```
+This need to be run only once. This command will create `.initialized` file. \
+If you want to re-initialize, run `task init --force` or remove `.initialized` file.
+
+WARNING, these files will be replaced during initialization:
+- ./traefik/config/static/traefik.yml
+- ./traefik/config/dynamic/certificates.yml
+- ./portainer/portainer-admin-password-file - if Portainer has been created, changing password in this file won't change admin password. To change password you need to remove portainer container, volume and recreate it or check Portianer [docs](https://docs.portainer.io/advanced/reset-admin.)
+- ./dns/dnsmasq/dnsmasq.d/blumilk-local-environment.conf
+- ./dns/systemd/resolved.conf.d/blumilk-local-environment.conf
+- .initialized
+
 ## Usage
 
-Before first setup, make sure you have the required dependencies:
+To run environment:
+```shell
+task run
+```
 
-    sudo apt install make libnss3-tools
+### Portainer access
 
-Also note that ports `:80` and `:443` need to be unoccupied.
+By default:
+user: admin
+password: passwordpassword
+dashborad: [https://portainer.blumilk.local.env](https://portainer.blumilk.local.env)
 
-To initialize the environment:
+### Traefik access
+dashborad: [https://traefik.blumilk.local.env](https://traefik.blumilk.local.env)
 
-    make init
+# Certificates
 
-This will:
+We're using *mkcert* to generate self-signed certificates to support https in local development. These certificates will cover a local domain ***.blumilk.local.env**.
 
-- generate locally-trusted development certificates needed to run traefik over https
-- create an `.env` file (if none exists) 
-- set up a docker network
-
-To actually run the environment:
-
-    make run
-
-This will start a preconfigured traefik docker container. The container will occupy your ports `:80` and `:443`. It will also automatically start with the system but you can manage it with: `make stop` and `make restart`.
-
-Traefik dashboard will be available here:
-
-- http: http://traefik.blumilk.localhost
-- https: https://traefik.blumilk.localhost
-
-If you want to force HTTPS, uncomment this line: \
-`- "traefik.http.routers.traefik-dashboard-http-router.middlewares=https-redirect@file"`\
-in `traefik/docker-compose.yaml`, and restart traefik (`make restart`).
-
-## Sample app
-
-You can verify the environment is working with an included sample app `whoami`. Just run (in the same directory as this file): 
-
-    docker compose up -d
-
-The sample app should be available here:
-
-- http: http://whoami.blumilk.localhost
-- https: https://whoami.blumilk.localhost
-
-Optionally, you can redirect all HTTP traffic to HTTPS. To do so, uncomment: \
-`- "traefik.http.routers.whoami-http-router.middlewares=https-redirect@file"` \
-in `docker-compose.yaml`, and restart the container.
-
-## Local domains
-
-Everything with `*.localhost` will be resolved to `127.0.0.1` so there's no need to edit `/etc/hosts` file.
-
-The environment uses domain names matching: `*.blumilk.localhost`.
-
-## Certificates
-
-We're using *mkcert* to generate self-signed certificates to support https in local development. These certificates will cover a local domain ***.blumilk.localhost**.
-
-Keep in mind that *X.509 wildcard certificates* only go **one level deep**. So a domain `a.blumilk.localhost` is valid but `a.b.blumilk.localhost` is not.
+Keep in mind that *X.509 wildcard certificates* only go **one level deep**. So a domain `a.blumilk.local.env` is valid but `a.b.blumilk.local.env` is not.
 
 Certificates will be valid for **2 years**.
+
+## Additional certificates for other domains/subdomains
+
+By default, all 1st level subdomains under `*.blumilk.local.env` will be covered. E.g. `foo.blumilk.local.env`.
+
+If you need to cover 2nd level subdomains under. `*.foo.blumilk.local.env`, e.g. `bar.foo.blumilk.local.env` \
+you have to generate new certs:
+```shell
+task generate-certs \
+  CERT_FILENAME=_wildcard.foo.blumilk.local.env.pem \
+  KEY_FILENAME=_wildcard.foo.blumilk.local.env-key.pem \
+  DOMAIN=*.foo.blumilk.local.env
+```
+
+Then **add** certificates to `./traefik/config/dynamic/certificates.yml` file:
+```
+    - certFile: /certs/_wildcard.foo.blumilk.local.env.pem
+      keyFile: /certs/_wildcard.foo.blumilk.local.env-key.pem
+```
+
+And restart Traefik (task restart)
+
+# HTTPS in containers
+
+If you need to call any `*.blumilk.local.env` subdomains via https, you have to add mkcert CA cert to the docker container.
+
+To do it run container from which you want to send requests via https. \
+Use container name or ID.
+```shell
+task copy-ca-cert-to-container CONTAINER_NAME=your-container-name
+```
+
+Now you will be able to send requests via https to `*.blumilk.local.env` domains.
 
 ### More on mkcert
 
 - github: https://github.com/FiloSottile/mkcert
 - releases: https://github.com/FiloSottile/mkcert/releases
 
-## Docker
-
-A docker network `traefik-proxy-blumilk-local` will be created if it does not exist.
-
 # Using the environment with your project
 
 Detailed instructions on how to use this environment with your project are available
 [here](project_usage.md).
-
-# Troubleshooting
-
-- Traefik requires ports `:80` and `:443` and the container will refuse to start if something is blocking any of these.
-    - to see what's listening on port 80, you can use this command: `ss -peanut | grep ":80" | grep LISTEN`

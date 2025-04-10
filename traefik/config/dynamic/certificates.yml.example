@@ -1,0 +1,4 @@
+tls:
+  certificates:
+    - certFile: /certs/CERT_FILENAME_PLACEHOLDER
+      keyFile: /certs/KEY_FILENAME_PLACEHOLDER

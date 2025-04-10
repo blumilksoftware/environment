@@ -1,4 +1,9 @@
-.idea/
-.certs.env
 .env
-portainer-admin-password-file
+.idea/
+.initialized
+
+/dns/dnsmasq/dnsmasq.d/blumilk-local-environment.conf
+/dns/systemd/resolved.conf.d/blumilk-local-environment.conf
+/portainer/portainer-admin-password-file
+/traefik/config/dynamic/certificates.yml
+/traefik/config/static/traefik.yml

@@ -1,37 +1,34 @@
 networks:
-  traefik-proxy-blumilk-local-environment:
-    name: traefik-proxy-blumilk-local-environment
+  traefik-proxy-network:
+    name: ${TRAEFIK_NETWORK_NAME}
     ipam:
       config:
-        - subnet: 172.31.0.0/16
-          gateway: 172.31.0.1
+        - subnet: ${NETWORK_SUBNET}
 
 volumes:
-  portainer-data-blumilk-local-environment:
-    name: portainer-data-blumilk-local-environment
+  portainer-data-volume:
+    name: ${PORTAINER_VOLUME_NAME}
 
 services:
-  traefik-proxy-blumilk-local-service:
+  traefik-proxy-service:
     image: traefik:v3.3.5
-    container_name: traefik-proxy-blumilk-local-environment-container
+    container_name: ${TRAEFIK_CONTAINER_NAME}
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.blumilk.local.environment=true"
+      - "${TRAEFIK_CUSTOM_LABEL_NAME}=true"
       # HTTP
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-http-router.rule=Host(`${TRAEFIK_DASHBOARD_HOST_NAME}`)"
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-http-router.service=api@internal"
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-http-router.entrypoints=web"
-      # MIDDLEWARES
-#      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-http-router.middlewares=https-redirect@file"
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.rule=Host(`${TRAEFIK_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.service=api@internal"
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.entrypoints=web"
       # HTTPS
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.rule=Host(`${TRAEFIK_DASHBOARD_HOST_NAME}`)"
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.service=api@internal"
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.entrypoints=websecure"
-      - "traefik.http.routers.traefik-dashboard-blumilk-local-environment-https-router.tls=true"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.rule=Host(`${TRAEFIK_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.service=api@internal"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.tls=true"
     networks:
-      traefik-proxy-blumilk-local-environment:
-        ipv4_address: 172.31.100.100
+      traefik-proxy-network:
+        ipv4_address: ${TRAEFIK_IP}
     expose:
       - 80 # web entrypoint
       - 443 # websecure entrypoint
@@ -44,71 +41,43 @@ services:
       # self-signed certificates
       - ./traefik/certs:/certs
 
-  portainer-blumilk-local-service:
-    image: portainer/portainer-ce:lts
-    container_name: portainer-blumilk-local-environment-container
+  portainer-service:
+    image: portainer/portainer-ce:lts@sha256:7f10a26bfdda3fc58295ea09b860117ecd86a642d66fb94ce1f27a4c221d4649
+    container_name: ${PORTAINER_CONTAINER_NAME}
     restart: unless-stopped
     command:
       - --admin-password-file
       - /tmp/portainer-admin-password-file
     labels:
       - "traefik.enable=true"
-      - "traefik.blumilk.local.environment=true"
+      - "${TRAEFIK_CUSTOM_LABEL_NAME}=true"
       # HTTP
-      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-http-router.rule=Host(`${PORTAINER_DASHBOARD_HOST_NAME}`)"
-      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-http-router.entrypoints=web"
-      # MIDDLEWARES
-      #      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-http-router.middlewares=https-redirect@file"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTP_ROUTER_NAME}.rule=Host(`${PORTAINER_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTP_ROUTER_NAME}.entrypoints=web"
       # HTTPS
-      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-https-router.rule=Host(`${PORTAINER_DASHBOARD_HOST_NAME}`)"
-      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-https-router.entrypoints=websecure"
-      - "traefik.http.routers.portainer-dashboard-blumilk-local-environment-https-router.tls=true"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.rule=Host(`${PORTAINER_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.tls=true"
       # LOADBALANCER
-      - "traefik.http.services.portainer-dashboard-blumilk-local-environment-service.loadbalancer.server.port=9000"
+      - "traefik.http.services.${PORTAINER_TRAEFIK_SERVICE}.loadbalancer.server.port=9000"
     networks:
-      - traefik-proxy-blumilk-local-environment
+      - traefik-proxy-network
     expose:
       - 9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data-blumilk-local-environment:/data
+      - portainer-data-volume:/data
       - ./portainer/portainer-admin-password-file:/tmp/portainer-admin-password-file
-
-#  bind9-blumilk-local-service:
-#    image: ubuntu/bind9:9.18-24.04_beta
-#    container_name: bind9-blumilk-local-environment-container
-#    restart: unless-stopped
-#    user: "1000"
-#    environment:
-#      - BIND9_USER=1000
-#      - TZ=UTC
-#    networks:
-#      traefik-proxy-blumilk-local-environment:
-#        ipv4_address: 172.31.200.200
-#    expose:
-#      - 53/tcp
-#      - 53/udp
-#    volumes:
-#      - ./bind9/config/named.conf:/etc/bind/named.conf
-#      - ./bind9/config/localhost.blumilk.pl.zone:/etc/bind/localhost.blumilk.pl.zone
-#      - ./bind9/cache:/var/cache/bind
-#      - ./bind9/records:/var/lib/bind
 
   dnsmasq-blumilk-local-service:
     image: dockurr/dnsmasq:2.91
-    container_name: dnsmasq-blumilk-local-environment-container
-    environment:
-      DNS1: "8.8.8.8" # google primary
-      DNS2: "8.8.4.4" # google secondary
+    container_name: ${DNSMASQ_CONTAINER_NAME}
+    restart: unless-stopped
     networks:
-      traefik-proxy-blumilk-local-environment:
-        ipv4_address: 172.31.200.200
+      traefik-proxy-network:
+        ipv4_address: ${DNS_IP}
     expose:
       - 53/tcp
       - 53/udp
-#    cap_add:
-#      - NET_ADMIN
-    restart: unless-stopped
     volumes:
-      - ./dnsmasq/dnsmasq.d/:/etc/dnsmasq.d/
-#      - ./dnsmasq.conf:/etc/dnsmasq.conf
+      - ./dns/dnsmasq/dnsmasq.d/:/etc/dnsmasq.d/

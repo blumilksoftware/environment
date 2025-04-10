@@ -1,0 +1,4 @@
+# https://github.com/dockur/dnsmasq/blob/master/dnsmasq.conf
+
+# forward all requests for *.TLD_PLACEHOLDER to Traefik container
+address=/TLD_PLACEHOLDER/TRAEFIK_CONTAINER_IP_PLACEHOLDER

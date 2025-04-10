@@ -1,4 +1,0 @@
-tls:
-  certificates:
-    - certFile: /certs/_wildcard.localhost.blumilk.pl.pem
-      keyFile: /certs/_wildcard.localhost.blumilk.pl-key.pem

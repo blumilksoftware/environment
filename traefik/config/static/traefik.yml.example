@@ -23,6 +23,6 @@ providers:
         directory: "/etc/traefik/config/dynamic"
         watch: true
     docker:
-        network: "traefik-proxy-blumilk-local-environment"
+        network: TRAEFIK_NETWORK_PLACEHOLDER
         exposedByDefault: false
-        constraints: "Label(`traefik.blumilk.local.environment`,`true`)"
+        constraints: "Label(`TRAEFIK_CUSTOM_LABEL_PLACEHOLDER`,`true`)"

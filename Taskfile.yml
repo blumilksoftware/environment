@@ -4,10 +4,15 @@ version: "3.42.1"
 silent: true
 
 env:
-  TRAEFIK_DIR: ./traefik
+  INIT_FILENAME: .initialized
 
 dotenv:
-  - .certs.env
+  - .env
+
+includes:
+  init:
+    taskfile: ./Taskfile-init.yml
+    flatten: true
 
 tasks:
   default:
@@ -18,8 +23,8 @@ tasks:
   run:
     desc: "Run containers"
     preconditions:
-      - sh: test -f .env
-        msg: "Please create .env file."
+      - sh: test -f {{ .INIT_FILENAME }}
+        msg: "Please init project first (task init)"
     cmds:
       - cmd: docker compose up --detach
 
@@ -31,12 +36,24 @@ tasks:
   restart:
     desc: "Restart containers"
     cmds:
-      - task: stop-traefik
-      - task: run-traefik
+      - task: stop
+      - task: run
+
+  # https://docs.docker.com/engine/network/ca-certs/#add-certificates-to-containers
+  copy-ca-cert-to-container:
+    desc: "Copy and install mkcert CA certificate to the container"
+    requires:
+      vars: [CONTAINER_NAME]
+    vars:
+      CA_CERT_DIR:
+        sh: "{{ .MKCERT_BINARY }} -CAROOT"
+    cmds:
+      - cmd: docker cp {{ .CA_CERT_DIR }}/rootCA.pem {{ .CONTAINER_NAME }}:/usr/local/share/ca-certificates/mkcert-ca-cert.crt
+      - cmd: docker exec --user root {{ .CONTAINER_NAME }} update-ca-certificates
 
   generate-certs:
     desc: "Generate certificates"
-    deps: [install-mkcert]
+    deps: [_mkcert-install]
     requires:
       vars: [CERTS_DIRECTORY, CERT_FILENAME, KEY_FILENAME, DOMAIN]
     cmds:
@@ -46,29 +63,9 @@ tasks:
         -ecdsa \
         {{ .DOMAIN }}"
 
-  install-mkcert:
-    desc: "Install mkcert tool from binary"
-    requires:
-      vars: [MKCERT_BINARY]
-    cmds:
-      - task: _install-certutil-library
-      - cmd: echo "Installing mkcert from {{ .MKCERT_BINARY }}"
-      - cmd: "{{ .MKCERT_BINARY }} --install"
-      - cmd: echo "Done."
-
   mkcert-print-CA-location:
-    desc: "Print the CA certificate and key storage location."
+    desc: "Print the CA certificate and key storage location"
     requires:
       vars: [MKCERT_BINARY]
     cmds:
       - cmd: "{{ .MKCERT_BINARY }} -CAROOT"
-
-  _install-certutil-library:
-    internal: true
-    platforms: [linux]
-    desc: "Install certutil"
-    requires:
-      vars: [CERTUTIL_INSTALL_COMMAND]
-    cmds:
-      - cmd: echo "Installing libnss3-tools via command {{ .CERTUTIL_INSTALL_COMMAND }}"
-      - cmd: "{{ .CERTUTIL_INSTALL_COMMAND }}"
