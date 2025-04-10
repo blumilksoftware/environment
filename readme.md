@@ -1,6 +1,6 @@
 # Local Blumilk Traefik environment
 
-This repo contains default Blumilk traefik configuration for local development environment.
+This repo contains default Blumilk Traefik configuration for local development environment.
 
 # Requirements
 
@@ -8,7 +8,7 @@ This repo contains default Blumilk traefik configuration for local development e
 - Linux system
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose (version 2)](https://docs.docker.com/compose/install/)
-- [Taskfile](https://taskfile.dev/) (version 3.42.1)
+- [Taskfile](https://taskfile.dev/) (min. version 3.42.1)
 
 # Installation
 
@@ -98,9 +98,9 @@ task run
 
 ### Portainer access
 
-By default:
-user: admin
-password: passwordpassword
+By default: \
+user: admin \
+password: passwordpassword \
 dashborad: [https://portainer.blumilk.local.env](https://portainer.blumilk.local.env)
 
 ### Traefik access
@@ -108,9 +108,11 @@ dashborad: [https://traefik.blumilk.local.env](https://traefik.blumilk.local.env
 
 # Certificates
 
-We're using *mkcert* to generate self-signed certificates to support https in local development. These certificates will cover a local domain ***.blumilk.local.env**.
+We're using *mkcert* to generate self-signed certificates to support https in local development. \
+These certificates will cover a local domain ***.blumilk.local.env**.
 
-Keep in mind that *X.509 wildcard certificates* only go **one level deep**. So a domain `a.blumilk.local.env` is valid but `a.b.blumilk.local.env` is not.
+Keep in mind that *X.509 wildcard certificates* only go **one level deep**. \
+So a domain `a.blumilk.local.env` is valid but `a.b.blumilk.local.env` is not.
 
 Certificates will be valid for **2 years**.
 
@@ -119,7 +121,7 @@ Certificates will be valid for **2 years**.
 By default, all 1st level subdomains under `*.blumilk.local.env` will be covered. E.g. `foo.blumilk.local.env`.
 
 If you need to cover 2nd level subdomains under. `*.foo.blumilk.local.env`, e.g. `bar.foo.blumilk.local.env` \
-you have to generate new certs:
+you have to generate new certs. Adjust filenames and domain for your needs:
 ```shell
 task generate-certs \
   CERT_FILENAME=_wildcard.foo.blumilk.local.env.pem \
@@ -133,11 +135,11 @@ Then **add** certificates to `./traefik/config/dynamic/certificates.yml` file:
       keyFile: /certs/_wildcard.foo.blumilk.local.env-key.pem
 ```
 
-And restart Traefik (task restart)
+And restart Traefik (`task restart`)
 
 # HTTPS in containers
 
-If you need to call any `*.blumilk.local.env` subdomains via https, you have to add mkcert CA cert to the docker container.
+If you need to call any `*.blumilk.local.env` subdomains via https from container, you have to add mkcert CA cert to the docker container.
 
 To do it run container from which you want to send requests via https. \
 Use container name or ID.
@@ -145,7 +147,7 @@ Use container name or ID.
 task copy-ca-cert-to-container CONTAINER_NAME=your-container-name
 ```
 
-Now you will be able to send requests via https to `*.blumilk.local.env` domains.
+Now you will be able to send requests via https to `*.blumilk.local.env` domains or others generated via mkcert.
 
 ### More on mkcert
 

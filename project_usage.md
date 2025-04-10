@@ -8,7 +8,7 @@
 
 1. Declare a traefik network in your docker-compose file \
 
-    It's `TRAEFIK_NETWORK_NAME` in `.env` file.
+    It's `TRAEFIK_NETWORK_NAME` in `.env` file in this repo.
 ```yaml
 # docker-compose.yml
 networks:
@@ -34,7 +34,7 @@ services:
     your-service:
         labels:
             - "traefik.enable=true"
-            # It's `TRAEFIK_CUSTOM_LABEL_NAME` from `.env` file
+            # It's `TRAEFIK_CUSTOM_LABEL_NAME` from `.env` file in this repo
             - "traefik.blumilk.local.environment=true"
             # HTTP
             - "traefik.http.routers.NAME-http-router.rule=Host(`DOMAIN.blumilk.local.env`)"
@@ -47,9 +47,9 @@ services:
             - "traefik.http.routers.NAME-https-router.tls=true"        
 ```
 
-Where **NAME** should be replaced with your app name slug (no spaces) and **DOMAIN** should be replaced with an app name that you'll use in url, e.g.: if DOMAING is set to `my-app` then your app will be accessible with: `my-app.blumilk.local.env`.
+Where **NAME** should be replaced with your app name slug (no spaces) and **DOMAIN** should be replaced with an app name that you'll use in url, e.g.: if DOMAIN is set to `my-app` then your app will be accessible with: `my-app.blumilk.local.env`.
 
-You can also use `.env` file to provide domain name, e.g.:
+You can also use `.env` file in your project, to provide domain name, e.g.:
 
 ```yaml
 # docker-compose.yaml
