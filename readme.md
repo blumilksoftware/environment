@@ -16,10 +16,13 @@ This repo contains default Blumilk Traefik configuration for local development e
 ## Taskfile setup
 ### Linux
 
-If you don't have Task binary installed, you can install it by running:
+If you don't have Task binary installed, you can install it by running command below. \
+If you don't want to install to `/usr/local/bin` (dir for all users in the system) change `-b` flag value. \
+Be sure that provided path is in system $PATH, that binary will be available in the terminal. 
+To check system paths type `$PATH` in the terminal.
 
 ```shell
-sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin v3.42.1 
+sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin v3.42.1
 ```
 _-b sets bindir or installation directory, Defaults to ./bin_ \
 _-d turns on debug logging_
