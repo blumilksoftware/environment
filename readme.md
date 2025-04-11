@@ -6,6 +6,7 @@ This repo contains default Blumilk Traefik configuration for local development e
 
 ---
 - Linux system
+- one free port on host system (default 301)
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose (version 2)](https://docs.docker.com/compose/install/)
 - [Taskfile](https://taskfile.dev/) (min. version 3.42.1)
@@ -109,6 +110,25 @@ dashborad: [https://portainer.blumilk.local.env](https://portainer.blumilk.local
 ### Traefik access
 dashborad: [https://traefik.blumilk.local.env](https://traefik.blumilk.local.env)
 
+### Redirect entry point
+Traefik requires one free host port to use redirect entrypoint for `localhost` hostnames. \
+By default it is `301` port. \
+You can customize this host port for this entrypoint in `.env` file via `TRAEFIK_REDIRECT_ENTRYPOINT_HOST_PORT`. \
+
+If project has been initialized already, and you changed this value, you need to initialize project again or update `regex` key in `middlewares.yml` file manually.
+
+This entrypoint redirect permanent (301 HTTP code) to the part after `/`. \
+Example:
+```
+http://localhost:301/https://blumilk.pl
+```
+will be redirected to `https://blumilk.pl`.
+
+It is created to handle OAuth2 providers redirects URI (e.g. Google OAuth web app clients). Because you can use only `localhost`, `example.com` or real TLD domain. \
+This allows us to use custom domains (e.g. `my-app.blumilk.local.env`) and OAuth locally. \
+
+For example, redirect URI will be: `http://localhost:301/https://my-app.blumilk.local.env/something`
+
 # Certificates
 
 We're using *mkcert* to generate self-signed certificates to support https in local development. \
@@ -156,6 +176,13 @@ Now you will be able to send requests via https to `*.blumilk.local.env` domains
 
 - github: https://github.com/FiloSottile/mkcert
 - releases: https://github.com/FiloSottile/mkcert/releases
+
+# Reload systemd-resolved configuration
+If you changed `blumilk-local-environment.conf` in `./systemd/resolved.conf.d` after project initialization, or want to customize it, run:
+```shell
+task configure-systemd-resolved
+```
+It will copy this file to the `/etc/systemd/resolved.conf.d` and restart `systemd-resolved`.
 
 # Using the environment with your project
 

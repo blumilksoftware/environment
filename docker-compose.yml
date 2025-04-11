@@ -32,6 +32,8 @@ services:
     expose:
       - 80 # web entrypoint
       - 443 # websecure entrypoint
+    ports:
+      - ${TRAEFIK_REDIRECT_ENTRYPOINT_HOST_PORT}:301 # redirect-301 entrypoint
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # static config file

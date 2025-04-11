@@ -1,0 +1,14 @@
+http:
+    middlewares:
+
+        https-redirect:
+            redirectScheme:
+                scheme: https
+                permanent: true
+                port: 443
+
+        permanent-redirect:
+            redirectregex:
+                regex: ^https?://localhost:REDIRECT_ENTRYPOINT_HOST_PORT_PLACEHOLDER/(.*)
+                replacement: ${1}
+                permanent: false

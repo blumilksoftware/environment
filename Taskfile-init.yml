@@ -61,6 +61,7 @@ tasks:
     vars:
       TRAEFIK_STATIC_CONFIG_FILENAME: traefik.yml
       TRAEFIK_CERTS_FILENAME: certificates.yml
+      TRAEFIK_MIDDLEWARES_FILENAME: middlewares.yml
     cmds:
       - cmd: |
           echo "Creating Traefik {{ .TRAEFIK_STATIC_CONFIG_FILENAME }} file"
@@ -79,6 +80,12 @@ tasks:
             --expression "s/CERT_FILENAME_PLACEHOLDER/{{ .CERT_FILENAME }}/" \
             --expression "s/KEY_FILENAME_PLACEHOLDER/{{ .KEY_FILENAME }}/" \
             {{ .TRAEFIK_CERTS_FILENAME }}
+          echo "Done"
+      - cmd: |
+          echo "Creating Traefik {{ .TRAEFIK_MIDDLEWARES_FILENAME }} file"
+          cd ./dynamic
+          cp {{ .TRAEFIK_MIDDLEWARES_FILENAME }}.example {{ .TRAEFIK_MIDDLEWARES_FILENAME }}
+          sed --in-place "s/REDIRECT_ENTRYPOINT_HOST_PORT_PLACEHOLDER/{{ .TRAEFIK_REDIRECT_ENTRYPOINT_HOST_PORT }}/" {{ .TRAEFIK_MIDDLEWARES_FILENAME }}
           echo "Done"
 
   _init-portainer-files:
@@ -126,6 +133,15 @@ tasks:
             --expression "s/TLD_PLACEHOLDER/{{ .TLD }}/" \
             {{ .DNS_RESOLVER_CONFIG_FILENAME }}
           echo "Done"
+      - task: configure-systemd-resolved
+
+  configure-systemd-resolved:
+    desc: "Configure systemd-resolved"
+    dir: ./dns/systemd/resolved.conf.d
+    vars:
+      DNS_RESOLVER_CONFIG_FILENAME: blumilk-local-environment.conf
+      SYSTEMD_RESOLVED_CONF_DIR_PATH: /etc/systemd/resolved.conf.d
+    cmds:
       - cmd: |
           echo "Configuring systemd DNS resolver"
           sudo mkdir -p {{ .SYSTEMD_RESOLVED_CONF_DIR_PATH }}

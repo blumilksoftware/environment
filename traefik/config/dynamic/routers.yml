@@ -1,0 +1,18 @@
+http:
+  routers:
+    redirect-301-http-router:
+      entryPoints:
+        - redirect-301
+      middlewares:
+        - permanent-redirect
+      rule: "Host(`localhost`)"
+      service: noop@internal
+
+    redirect-301-https-router:
+      entryPoints:
+        - redirect-301
+      middlewares:
+        - permanent-redirect
+      rule: "Host(`localhost`)"
+      service: noop@internal
+      tls: {}

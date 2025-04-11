@@ -6,4 +6,5 @@
 /dns/systemd/resolved.conf.d/blumilk-local-environment.conf
 /portainer/portainer-admin-password-file
 /traefik/config/dynamic/certificates.yml
+/traefik/config/dynamic/middlewares.yml
 /traefik/config/static/traefik.yml

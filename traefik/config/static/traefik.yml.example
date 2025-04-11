@@ -7,6 +7,9 @@ log:
     format: common
 
 entryPoints:
+    redirect-301:
+        address: ":301"
+
     web:
         address: ":80"
 
