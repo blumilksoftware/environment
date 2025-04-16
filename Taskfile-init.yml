@@ -1,0 +1,158 @@
+# https://taskfile.dev
+version: "3.42.1"
+
+silent: true
+
+env:
+  DATETIME:
+    sh: TZ=Europe/Warsaw date --rfc-3339=seconds
+
+tasks:
+  init:
+    desc: "Initialize project"
+    vars:
+      INITIALIZED_MSG:
+        sh: "if test -f {{ .INIT_FILENAME }}; then cat {{ .INIT_FILENAME }}; fi"
+    preconditions:
+      - sh: test -f .env
+        msg: "Please create .env file."
+      - sh: test ! -f {{ .INIT_FILENAME }}
+        msg: |
+          {{ .INITIALIZED_MSG }}
+          use --force flag
+          or remove {{ .INIT_FILENAME }} file
+          
+          WARNING:
+          Run init again will overwrite previous generated files!
+    cmds:
+      - task: _init-traefik-files
+      - task: _init-portainer-files
+      - task: _init-dnsmasq-files
+      - task: _init-dns-resolver
+      - task: generate-certs
+      - task: _init-create-initialized-file
+      - cmd: echo "Initialization finished. Now you can run project (task run)"
+
+  _mkcert-install:
+    internal: true
+    desc: "Install mkcert tool from binary"
+    requires:
+      vars: [MKCERT_BINARY]
+    cmds:
+      - task: _install-certutil-library
+      - cmd: echo "Installing mkcert from {{ .MKCERT_BINARY }}"
+      - cmd: "{{ .MKCERT_BINARY }} --install"
+      - cmd: echo "Done."
+
+  _install-certutil-library:
+    internal: true
+    platforms: [linux]
+    desc: "Install certutil"
+    requires:
+      vars: [CERTUTIL_INSTALL_COMMAND]
+    cmds:
+      - cmd: echo "Installing required tools via command {{ .CERTUTIL_INSTALL_COMMAND }}"
+      - cmd: "{{ .CERTUTIL_INSTALL_COMMAND }}"
+
+  _init-traefik-files:
+    internal: true
+    desc: "Create and configure Traefik files"
+    dir: ./traefik/config
+    vars:
+      TRAEFIK_STATIC_CONFIG_FILENAME: traefik.yml
+      TRAEFIK_CERTS_FILENAME: certificates.yml
+      TRAEFIK_MIDDLEWARES_FILENAME: middlewares.yml
+    cmds:
+      - cmd: |
+          echo "Creating Traefik {{ .TRAEFIK_STATIC_CONFIG_FILENAME }} file"
+          cd ./static
+          cp {{ .TRAEFIK_STATIC_CONFIG_FILENAME }}.example {{ .TRAEFIK_STATIC_CONFIG_FILENAME }}
+          sed --in-place \
+            --expression "s/TRAEFIK_NETWORK_PLACEHOLDER/{{ .TRAEFIK_NETWORK_NAME }}/" \
+            --expression "s/TRAEFIK_CUSTOM_LABEL_PLACEHOLDER/{{ .TRAEFIK_CUSTOM_LABEL_NAME }}/" \
+            {{ .TRAEFIK_STATIC_CONFIG_FILENAME }}
+          echo "Done"
+      - cmd: |
+          echo "Creating Traefik {{ .TRAEFIK_CERTS_FILENAME }} file"
+          cd ./dynamic
+          cp {{ .TRAEFIK_CERTS_FILENAME }}.example {{ .TRAEFIK_CERTS_FILENAME }}
+          sed --in-place \
+            --expression "s/CERT_FILENAME_PLACEHOLDER/{{ .CERT_FILENAME }}/" \
+            --expression "s/KEY_FILENAME_PLACEHOLDER/{{ .KEY_FILENAME }}/" \
+            {{ .TRAEFIK_CERTS_FILENAME }}
+          echo "Done"
+      - cmd: |
+          echo "Creating Traefik {{ .TRAEFIK_MIDDLEWARES_FILENAME }} file"
+          cd ./dynamic
+          cp {{ .TRAEFIK_MIDDLEWARES_FILENAME }}.example {{ .TRAEFIK_MIDDLEWARES_FILENAME }}
+          sed --in-place "s/REDIRECT_ENTRYPOINT_HOST_PORT_PLACEHOLDER/{{ .TRAEFIK_REDIRECT_ENTRYPOINT_HOST_PORT }}/" {{ .TRAEFIK_MIDDLEWARES_FILENAME }}
+          echo "Done"
+
+  _init-portainer-files:
+    internal: true
+    desc: "Create and configure Portainer files"
+    dir: ./portainer
+    vars:
+      PORTAINER_ADMIN_PASSWORD_FILENAME: portainer-admin-password-file
+    cmds:
+      - cmd: |
+          echo "Creating Portainer {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }} file"        
+          cp {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}.example {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}
+          sed --in-place "s/PORTAINER_ADMIN_PASSWORD_PLACEHOLDER/{{ .PORTAINER_ADMIN_INIT_PASSWORD }}/" {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}        
+          echo "Done"
+
+  _init-dnsmasq-files:
+    internal: true
+    desc: "Create and configure Dnsmasq files."
+    dir: ./dns/dnsmasq/dnsmasq.d
+    vars:
+      DNSMASQ_CONFIG_FILENAME: blumilk-local-environment.conf
+    cmds:
+      - cmd: |
+          echo "Creating Dnsmasq {{ .DNSMASQ_CONFIG_FILENAME }} file"
+          cp {{ .DNSMASQ_CONFIG_FILENAME }}.example {{ .DNSMASQ_CONFIG_FILENAME }} 
+          sed --in-place \
+            --expression "s/TRAEFIK_CONTAINER_IP_PLACEHOLDER/{{ .TRAEFIK_IP }}/" \
+            --expression "s/TLD_PLACEHOLDER/{{ .TLD }}/" \
+            {{ .DNSMASQ_CONFIG_FILENAME }}
+          echo "Done"
+
+  _init-dns-resolver:
+    internal: true
+    desc: "Create and configure DNS resolver"
+    dir: ./dns/systemd/resolved.conf.d
+    vars:
+      DNS_RESOLVER_CONFIG_FILENAME: blumilk-local-environment.conf
+      SYSTEMD_RESOLVED_CONF_DIR_PATH: /etc/systemd/resolved.conf.d
+    cmds:
+      - cmd: |
+          echo "Creating DNS resolver {{ .DNS_RESOLVER_CONFIG_FILENAME }} file"          
+          cp {{ .DNS_RESOLVER_CONFIG_FILENAME }}.example {{ .DNS_RESOLVER_CONFIG_FILENAME }}
+          sed --in-place \
+            --expression "s/DNS_CONTAINER_IP_PLACEHOLDER/{{ .DNS_IP }}/" \
+            --expression "s/TLD_PLACEHOLDER/{{ .TLD }}/" \
+            {{ .DNS_RESOLVER_CONFIG_FILENAME }}
+          echo "Done"
+      - task: configure-systemd-resolved
+
+  configure-systemd-resolved:
+    desc: "Configure systemd-resolved"
+    dir: ./dns/systemd/resolved.conf.d
+    vars:
+      DNS_RESOLVER_CONFIG_FILENAME: blumilk-local-environment.conf
+      SYSTEMD_RESOLVED_CONF_DIR_PATH: /etc/systemd/resolved.conf.d
+    cmds:
+      - cmd: |
+          echo "Configuring systemd DNS resolver"
+          sudo mkdir -p {{ .SYSTEMD_RESOLVED_CONF_DIR_PATH }}
+          sudo cp {{ .DNS_RESOLVER_CONFIG_FILENAME }} {{ .SYSTEMD_RESOLVED_CONF_DIR_PATH }}/{{ .DNS_RESOLVER_CONFIG_FILENAME }}
+          sudo systemctl restart systemd-resolved
+          echo "Done"
+
+  _init-create-initialized-file:
+    internal: true
+    desc: "Create {{ .INIT_FILENAME }} file"
+    cmds:
+      - cmd: echo "Creating {{ .INIT_FILENAME }} file"
+      - cmd: "echo 'Project has been initialized: {{ .DATETIME }}' > {{ .INIT_FILENAME }}"
+      - cmd: echo "Done"

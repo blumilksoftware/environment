@@ -3,9 +3,13 @@ global:
     sendAnonymousUsage: false
 
 log:
-    level: ERROR
+    level: DEBUG
+    format: common
 
 entryPoints:
+    redirect-301:
+        address: ":301"
+
     web:
         address: ":80"
 
@@ -22,9 +26,6 @@ providers:
         directory: "/etc/traefik/config/dynamic"
         watch: true
     docker:
-        network: "traefik-proxy-blumilk-local"
+        network: TRAEFIK_NETWORK_PLACEHOLDER
         exposedByDefault: false
-        constraints: "Label(`traefik.blumilk.environment`,`true`)"
-
-experimental:
-    http3: true
+        constraints: "Label(`TRAEFIK_CUSTOM_LABEL_PLACEHOLDER`,`true`)"

@@ -1,0 +1,71 @@
+# https://taskfile.dev
+version: "3.42.1"
+
+silent: true
+
+env:
+  INIT_FILENAME: .initialized
+
+dotenv:
+  - .env
+
+includes:
+  init:
+    taskfile: ./Taskfile-init.yml
+    flatten: true
+
+tasks:
+  default:
+    desc: "List all available tasks"
+    cmds:
+      - task --list-all
+
+  run:
+    desc: "Run containers"
+    preconditions:
+      - sh: test -f {{ .INIT_FILENAME }}
+        msg: "Please init project first (task init)"
+    cmds:
+      - cmd: docker compose up --detach
+
+  stop:
+    desc: "Stop containers"
+    cmds:
+      - cmd: docker compose stop
+
+  restart:
+    desc: "Restart containers"
+    cmds:
+      - task: stop
+      - task: run
+
+  # https://docs.docker.com/engine/network/ca-certs/#add-certificates-to-containers
+  copy-ca-cert-to-container:
+    desc: "Copy and install mkcert CA certificate to the container"
+    requires:
+      vars: [CONTAINER_NAME]
+    vars:
+      CA_CERT_DIR:
+        sh: "{{ .MKCERT_BINARY }} -CAROOT"
+    cmds:
+      - cmd: docker cp {{ .CA_CERT_DIR }}/rootCA.pem {{ .CONTAINER_NAME }}:/usr/local/share/ca-certificates/mkcert-ca-cert.crt
+      - cmd: docker exec --user root {{ .CONTAINER_NAME }} update-ca-certificates
+
+  generate-certs:
+    desc: "Generate certificates"
+    deps: [_mkcert-install]
+    requires:
+      vars: [CERTS_DIRECTORY, CERT_FILENAME, KEY_FILENAME, DOMAIN]
+    cmds:
+      - cmd: "{{ .MKCERT_BINARY }} \
+        --cert-file={{ .CERTS_DIRECTORY }}/{{ .CERT_FILENAME }} \
+        --key-file={{ .CERTS_DIRECTORY }}/{{ .KEY_FILENAME }} \
+        -ecdsa \
+        {{ .DOMAIN }}"
+
+  mkcert-print-CA-location:
+    desc: "Print the CA certificate and key storage location"
+    requires:
+      vars: [MKCERT_BINARY]
+    cmds:
+      - cmd: "{{ .MKCERT_BINARY }} -CAROOT"

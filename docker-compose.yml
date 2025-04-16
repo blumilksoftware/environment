@@ -1,0 +1,85 @@
+networks:
+  traefik-proxy-network:
+    name: ${TRAEFIK_NETWORK_NAME}
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET}
+
+volumes:
+  portainer-data-volume:
+    name: ${PORTAINER_VOLUME_NAME}
+
+services:
+  traefik-proxy-service:
+    image: traefik:v3.3.5
+    container_name: ${TRAEFIK_CONTAINER_NAME}
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "${TRAEFIK_CUSTOM_LABEL_NAME}=true"
+      # HTTP
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.rule=Host(`${TRAEFIK_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.service=api@internal"
+      - "traefik.http.routers.${TRAEFIK_HTTP_ROUTER_NAME}.entrypoints=web"
+      # HTTPS
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.rule=Host(`${TRAEFIK_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.service=api@internal"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${TRAEFIK_HTTPS_ROUTER_NAME}.tls=true"
+    networks:
+      traefik-proxy-network:
+        ipv4_address: ${TRAEFIK_IP}
+    expose:
+      - 80 # web entrypoint
+      - 443 # websecure entrypoint
+    ports:
+      - ${TRAEFIK_REDIRECT_ENTRYPOINT_HOST_PORT}:301 # redirect-301 entrypoint
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # static config file
+      - ./traefik/config/static/traefik.yml:/etc/traefik/traefik.yml
+      # dynamic config directory
+      - ./traefik/config/dynamic:/etc/traefik/config/dynamic
+      # self-signed certificates
+      - ./traefik/certs:/certs
+
+  portainer-service:
+    image: portainer/portainer-ce:lts@sha256:7f10a26bfdda3fc58295ea09b860117ecd86a642d66fb94ce1f27a4c221d4649
+    container_name: ${PORTAINER_CONTAINER_NAME}
+    restart: unless-stopped
+    command:
+      - --admin-password-file
+      - /tmp/portainer-admin-password-file
+    labels:
+      - "traefik.enable=true"
+      - "${TRAEFIK_CUSTOM_LABEL_NAME}=true"
+      # HTTP
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTP_ROUTER_NAME}.rule=Host(`${PORTAINER_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTP_ROUTER_NAME}.entrypoints=web"
+      # HTTPS
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.rule=Host(`${PORTAINER_DASHBOARD_SUBDOMAIN}.${TLD}`)"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${PORTAINER_TRAEFIK_HTTPS_ROUTER_NAME}.tls=true"
+      # LOADBALANCER
+      - "traefik.http.services.${PORTAINER_TRAEFIK_SERVICE}.loadbalancer.server.port=9000"
+    networks:
+      - traefik-proxy-network
+    expose:
+      - 9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data-volume:/data
+      - ./portainer/portainer-admin-password-file:/tmp/portainer-admin-password-file
+
+  dnsmasq-blumilk-local-service:
+    image: dockurr/dnsmasq:2.91
+    container_name: ${DNSMASQ_CONTAINER_NAME}
+    restart: unless-stopped
+    networks:
+      traefik-proxy-network:
+        ipv4_address: ${DNS_IP}
+    expose:
+      - 53/tcp
+      - 53/udp
+    volumes:
+      - ./dns/dnsmasq/dnsmasq.d/:/etc/dnsmasq.d/

@@ -1,0 +1,6 @@
+# https://ssl-config.mozilla.org/#server=traefik&version=3.2.1&config=modern&guideline=5.7
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS13
