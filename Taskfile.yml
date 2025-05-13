@@ -70,7 +70,7 @@ tasks:
       - cmd: docker cp {{ .CA_CERT_DIR }}/rootCA.pem {{ .CONTAINER_NAME }}:{{ .DESTINATION_DIR }}/{{ .CERT_NAME }}
       - echo "Done"
       - echo "Adding mkcert to trust store in container"
-      - cmd: docker exec --user root {{ .CONTAINER_NAME }} sh {{ .DESTINATION_DIR }}/{{ .SCRIPT_FILENAME }}
+      - cmd: docker exec --user root --workdir {{ .DESTINATION_DIR }} {{ .CONTAINER_NAME }} sh {{ .SCRIPT_FILENAME }}
       - echo "Done"
 
   generate-certs:
