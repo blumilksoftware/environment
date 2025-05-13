@@ -172,6 +172,16 @@ task copy-ca-cert-to-container CONTAINER_NAME=your-container-name
 
 Now you will be able to send requests via https to `*.blumilk.local.env` domains or others generated via mkcert.
 
+## HTTPS in browsers in containers
+
+To use self-signed certs in browsers, we have to add root CA (from mkcert) to the trust store.
+
+To do it, run the container from which you want to add mkcert root CA to the trust store. \
+Use container name or ID.
+```shell
+task copy-ca-cert-to-trust-store-in-container CONTAINER_NAME=your-container-name
+```
+
 ### More on mkcert
 
 - github: https://github.com/FiloSottile/mkcert

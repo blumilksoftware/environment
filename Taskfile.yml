@@ -51,6 +51,28 @@ tasks:
       - cmd: docker cp {{ .CA_CERT_DIR }}/rootCA.pem {{ .CONTAINER_NAME }}:/usr/local/share/ca-certificates/mkcert-ca-cert.crt
       - cmd: docker exec --user root {{ .CONTAINER_NAME }} update-ca-certificates
 
+  copy-ca-cert-to-trust-store-in-container:
+    desc: "Copy and install mkcert CA certificate to the trust store in container"
+    requires:
+      vars: [ CONTAINER_NAME ]
+    vars:
+      CA_CERT_DIR:
+        sh: "{{ .MKCERT_BINARY }} -CAROOT"
+      CERT_NAME: "blumilk-environment-mkcert-root-ca-cert.pem"
+      SCRIPT_FILENAME: "add-ca-to-trust-store.sh"
+      DESTINATION_DIR: "/tmp/blumilk-environment"
+    cmds:
+      - echo "Copying {{ .SCRIPT_FILENAME }} to the container"
+      - cmd: docker exec {{ .CONTAINER_NAME }} mkdir --parents {{ .DESTINATION_DIR }}
+      - cmd: docker cp ./scripts/{{ .SCRIPT_FILENAME }} {{ .CONTAINER_NAME }}:{{ .DESTINATION_DIR }}/{{ .SCRIPT_FILENAME }}
+      - echo "Done"
+      - echo "Copying mkcert root CA cert"
+      - cmd: docker cp {{ .CA_CERT_DIR }}/rootCA.pem {{ .CONTAINER_NAME }}:{{ .DESTINATION_DIR }}/{{ .CERT_NAME }}
+      - echo "Done"
+      - echo "Adding mkcert to trust store in container"
+      - cmd: docker exec --user root {{ .CONTAINER_NAME }} sh {{ .DESTINATION_DIR }}/{{ .SCRIPT_FILENAME }}
+      - echo "Done"
+
   generate-certs:
     desc: "Generate certificates"
     deps: [_mkcert-install]
