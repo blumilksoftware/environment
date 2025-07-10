@@ -9,26 +9,16 @@ This repo contains default Blumilk Traefik configuration for local development e
 - one free port on host system (default 301)
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose (version 2)](https://docs.docker.com/compose/install/)
-- [Taskfile](https://taskfile.dev/) (min. version 3.42.1)
+- [Taskfile](https://taskfile.dev/) (min. version 3)
 
 # Installation
 
 ---
 ## Taskfile setup
-### Linux
+### Installation
 
-If you don't have Task binary installed, you can install it by running command below. \
-If you don't want to install to `/usr/local/bin` (dir for all users in the system) change `-b` flag value. \
-Be sure that provided path is in system $PATH, that binary will be available in the terminal. 
-To check system paths type `$PATH` in the terminal.
+Installation methods: https://taskfile.dev/installation
 
-```shell
-sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin v3.42.1
-```
-_-b sets bindir or installation directory, Defaults to ./bin_ \
-_-d turns on debug logging_
-
-Other installation methods: https://taskfile.dev/installation \
 GitHub: https://github.com/go-task/task \
 Taskfile releases: https://github.com/go-task/task/releases
 
@@ -88,6 +78,7 @@ If you want to re-initialize, run `task init --force` or remove `.initialized` f
 WARNING, these files will be replaced during initialization:
 - ./traefik/config/static/traefik.yml
 - ./traefik/config/dynamic/certificates.yml
+- ./traefik/config/dynamic/middlewares.yml
 - ./portainer/portainer-admin-password-file - if Portainer has been created, changing password in this file won't change admin password. To change password you need to remove portainer container, volume and recreate it or check Portianer [docs](https://docs.portainer.io/advanced/reset-admin.)
 - ./dns/dnsmasq/dnsmasq.d/blumilk-local-environment.conf
 - ./dns/systemd/resolved.conf.d/blumilk-local-environment.conf
