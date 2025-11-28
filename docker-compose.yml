@@ -44,7 +44,7 @@ services:
       - ./traefik/certs:/certs
 
   portainer-service:
-    image: portainer/portainer-ce:lts@sha256:264443d4063e0f2633f3ba210ccd69aacf07344dfc792128131dec8963df0f0a
+    image: portainer/portainer-ce:2.36.0
     container_name: ${PORTAINER_CONTAINER_NAME}
     restart: unless-stopped
     command:
