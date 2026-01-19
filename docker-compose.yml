@@ -11,7 +11,7 @@ volumes:
 
 services:
   traefik-proxy-service:
-    image: traefik:v3.6.2
+    image: traefik:v3.6.7@sha256:2c5e029ee3638d3788b4ca7c8ef454baa8f924b91b190b3fd2742bee721ebeea
     container_name: ${TRAEFIK_CONTAINER_NAME}
     restart: unless-stopped
     labels:
@@ -44,7 +44,7 @@ services:
       - ./traefik/certs:/certs
 
   portainer-service:
-    image: portainer/portainer-ce:2.36.0
+    image: portainer/portainer-ce:2.37.0@sha256:b48a491b8d2838c7ee98da6e00e32a04d0347a26466f48b20fb11e484e28f32a
     container_name: ${PORTAINER_CONTAINER_NAME}
     restart: unless-stopped
     command:
