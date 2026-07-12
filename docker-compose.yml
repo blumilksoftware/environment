@@ -11,7 +11,7 @@ volumes:
 
 services:
   traefik-proxy-service:
-    image: traefik:v3.6.12@sha256:171c9c3565b29f6c133f1c1b43c5d4e5853415198e9e1078c001f8702ff66aec
+    image: traefik:v3.6.23@sha256:f5dba1e65167778cd5f8d1b463fc5d200f49d40c6458fc9f4b391a68ebfb9534
     container_name: ${TRAEFIK_CONTAINER_NAME}
     restart: unless-stopped
     labels:
@@ -44,7 +44,7 @@ services:
       - ./traefik/certs:/certs
 
   portainer-service:
-    image: portainer/portainer-ce:2.40.0@sha256:df76590a901e47010977ffe277473908350e13042ac304bbac0798649c63b937
+    image: portainer/portainer-ce:2.43.0@sha256:707366c811956fe077135a6633af67e698529612869711cdb24896c892b28feb
     container_name: ${PORTAINER_CONTAINER_NAME}
     restart: unless-stopped
     command:
@@ -72,7 +72,7 @@ services:
       - ./portainer/portainer-admin-password-file:/tmp/portainer-admin-password-file
 
   dnsmasq-blumilk-local-service:
-    image: dockurr/dnsmasq:2.92@sha256:e84feecd6551b586cf86f830f111ef36c399b0ca26a9bb6dae4a8ceb11626373
+    image: dockurr/dnsmasq:2.93@sha256:7ad3c1c802de00d15ef298f2892e4abaf4aa054e2ccc10bf323c000bf393ece5
     container_name: ${DNSMASQ_CONTAINER_NAME}
     restart: unless-stopped
     networks:
