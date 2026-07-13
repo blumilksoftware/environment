@@ -21,7 +21,7 @@ tasks:
           {{ .INITIALIZED_MSG }}
           use --force flag
           or remove {{ .INIT_FILENAME }} file
-          
+
           WARNING:
           Run init again will overwrite previous generated files!
     cmds:
@@ -96,9 +96,9 @@ tasks:
       PORTAINER_ADMIN_PASSWORD_FILENAME: portainer-admin-password-file
     cmds:
       - cmd: |
-          echo "Creating Portainer {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }} file"        
+          echo "Creating Portainer {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }} file"
           cp {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}.example {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}
-          sed --in-place "s/PORTAINER_ADMIN_PASSWORD_PLACEHOLDER/{{ .PORTAINER_ADMIN_INIT_PASSWORD }}/" {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}        
+          sed --in-place "s/PORTAINER_ADMIN_PASSWORD_PLACEHOLDER/{{ .PORTAINER_ADMIN_INIT_PASSWORD }}/" {{ .PORTAINER_ADMIN_PASSWORD_FILENAME }}
           echo "Done"
 
   _init-dnsmasq-files:
@@ -110,7 +110,7 @@ tasks:
     cmds:
       - cmd: |
           echo "Creating Dnsmasq {{ .DNSMASQ_CONFIG_FILENAME }} file"
-          cp {{ .DNSMASQ_CONFIG_FILENAME }}.example {{ .DNSMASQ_CONFIG_FILENAME }} 
+          cp {{ .DNSMASQ_CONFIG_FILENAME }}.example {{ .DNSMASQ_CONFIG_FILENAME }}
           sed --in-place \
             --expression "s/TRAEFIK_CONTAINER_IP_PLACEHOLDER/{{ .TRAEFIK_IP }}/" \
             --expression "s/TLD_PLACEHOLDER/{{ .TLD }}/" \
@@ -126,7 +126,7 @@ tasks:
       SYSTEMD_RESOLVED_CONF_DIR_PATH: /etc/systemd/resolved.conf.d
     cmds:
       - cmd: |
-          echo "Creating DNS resolver {{ .DNS_RESOLVER_CONFIG_FILENAME }} file"          
+          echo "Creating DNS resolver {{ .DNS_RESOLVER_CONFIG_FILENAME }} file"
           cp {{ .DNS_RESOLVER_CONFIG_FILENAME }}.example {{ .DNS_RESOLVER_CONFIG_FILENAME }}
           sed --in-place \
             --expression "s/DNS_CONTAINER_IP_PLACEHOLDER/{{ .DNS_IP }}/" \

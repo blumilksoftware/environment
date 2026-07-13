@@ -20,18 +20,18 @@ certname="My Root CA"
 ### For cert8 (legacy - DBM)
 ###
 
-for certDB in $(find ~/ -name "cert8.db")
+while IFS= read -r -d '' certDB
 do
-    certdir=$(dirname ${certDB});
-    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i ${certfile} -d dbm:${certdir}
-done
+    certdir=$(dirname "${certDB}")
+    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i "${certfile}" -d dbm:"${certdir}"
+done < <(find ~/ -name "cert8.db" -print0)
 
 ###
 ### For cert9 (SQL)
 ###
 
-for certDB in $(find ~/ -name "cert9.db")
+while IFS= read -r -d '' certDB
 do
-    certdir=$(dirname ${certDB});
-    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i ${certfile} -d sql:${certdir}
-done
+    certdir=$(dirname "${certDB}")
+    certutil -A -n "${certname}" -t "TCu,Cu,Tu" -i "${certfile}" -d sql:"${certdir}"
+done < <(find ~/ -name "cert9.db" -print0)
