@@ -28,4 +28,4 @@ providers:
     docker:
         network: TRAEFIK_NETWORK_PLACEHOLDER
         exposedByDefault: false
-        constraints: "Label(`TRAEFIK_CUSTOM_LABEL_PLACEHOLDER`,`true`)"
+        constraints: "Label(`TRAEFIK_CUSTOM_LABEL_PLACEHOLDER`,`true`) && !Label(`com.docker.compose.oneoff`,`True`)"
